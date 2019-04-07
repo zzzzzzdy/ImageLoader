@@ -9,8 +9,11 @@ public class CompressOptions {
     public static final int a = -1;
     public int width = a;
     public int height = a;
+    //质量
     public int quality = 85;
+    //图片最大尺寸
     public int maxSize = a;
+    //取样值
     public int sampleSize = 1;
     public CompressOptions scale(int width, int height){
         this.width = width;

@@ -27,11 +27,13 @@ public class ScaleCompress implements CompressStrategy {
             outHeight = (int)(outWidth/srcRatio);
         }else if(outWidth<=0){
             outWidth = (int)(outHeight*srcRatio);
-        }float outRatio = 1f * outWidth / outHeight;
-        if (outRatio < srcRatio) {
-            outHeight = (int) (outWidth / srcRatio);
-        } else if (outRatio > srcRatio) {
-            outWidth = (int) (outHeight * srcRatio);
+        }else {
+            float outRatio = 1f * outWidth / outHeight;
+            if (outRatio < srcRatio) {
+                outHeight = (int) (outWidth / srcRatio);
+            } else if (outRatio > srcRatio) {
+                outWidth = (int) (outHeight * srcRatio);
+            }
         }
 
         return Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, true);

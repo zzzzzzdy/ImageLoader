@@ -18,9 +18,17 @@ public class DiskCache implements ImageCache {
     }
 
     public Bitmap get(String url){
+        if(mCacheDir == null)
+        {
+            return null;
+        }
         return BitmapFactory.decodeFile(mCacheDir + url);
     }
     public void put(String url, Bitmap bmp){
+        if(mCacheDir == null)
+        {
+            return ;
+        }
         FileOutputStream fileOutputStream = null;
         try {
             File file = new File(mCacheDir,url);
@@ -45,7 +53,7 @@ public class DiskCache implements ImageCache {
     }
     public void setCacheDir(String path){
         if(mCacheDir == null){
-            this.mCacheDir = path.endsWith("/")?path:path+"+";
+            this.mCacheDir = path.endsWith("/")?path:path+"/";
         }
     }
     public String getCacheDir(){

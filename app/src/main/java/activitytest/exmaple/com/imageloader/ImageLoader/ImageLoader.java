@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.net.HttpURLConnection;
@@ -32,15 +34,17 @@ import activitytest.exmaple.com.imageloader.ImageLoader.Option.CompressOptions;
  */
 public class ImageLoader {
     private static final Handler MY_HANDLER = new Handler();
+
     private static final int THREAD_N = Runtime.getRuntime().availableProcessors();
     private static ExecutorService sFixedTreadPool = new ThreadPoolExecutor(THREAD_N,
             THREAD_N,0L,TimeUnit.MILLISECONDS,
             new StackLinkedBlockingDeque<Runnable>()
             );
+
     private ImageLoaderBuilder builder;
     private String mAddress;
     private ImageView mImageView;
-    private ImageLoader(ImageLoaderBuilder builder) {
+    private ImageLoader(@NonNull ImageLoaderBuilder builder) {
         this.builder = builder;
     }
     public static ImageLoaderBuilder with(Context context){
@@ -57,6 +61,7 @@ public class ImageLoader {
         this.mImageView = imageView;
         load2ImageView(true);
     }
+    //重载一次，是否缩放
     public void into(@NonNull ImageView imageView,boolean autoCompress) {
         this.mImageView = imageView;
         load2ImageView(autoCompress);
@@ -112,6 +117,7 @@ public class ImageLoader {
             public void success(Bitmap bitmap) {
                 if (mImageView.getTag().equals(getEncodedAddress())){
                     mImageView.setImageBitmap(bitmap);
+                    Log.d("aaaaa","hello");
                 }
             }
 
@@ -121,33 +127,42 @@ public class ImageLoader {
                     mImageView.setImageDrawable(builder.mErrorHolder);
                 }
                 e.printStackTrace();
+                Log.d("aaaaa","nohello"+e);
             }
         },getEncodedAddress());
     }
     private void loadBitmap(final LoadImageCallback callback, final  String url){
         sFixedTreadPool.submit(new Runnable() {
+
             @Override
             public void run() {
+
                 Bitmap bitmap = null;
-                if(builder.noMemoryCache){
+                Log.d("ababab","eheh"+(bitmap==null)+builder.noMemoryCache);
+                if (builder.noMemoryCache) {
                     bitmap = builder.mImageCache.get(url);
-                }else {
+
+                } else {
+                    Log.d("ababab","???");
                     bitmap = MemoryCache.getInstance().get(url);
-                    if(bitmap == null){
+                    if (bitmap == null) {
                         bitmap = builder.mImageCache.get(url);
                     }
                 }
-                if(bitmap==null){
-                    bitmap = mAddress.startsWith("http")? readFromHttp():readFromFile();
+                Log.d("ababab","eheh");
+                if (bitmap == null) {
+                    bitmap = mAddress.startsWith("http") ? readFromHttp() : readFromFile();
+
+                if (bitmap == null) {
+                    runOnUIThread(callback, null, new Exception("eroor address，can't"));
                 }
-                if(bitmap==null){
-                    runOnUIThread(callback, null, new Exception("eroor address"));
-                }
-                if(builder.withOriginal){
-                    cache(bitmap, builder.mEncrypt.encode(mAddress+new CompressOptions()));
+                if (builder.withOriginal) {
+                    cache(bitmap, builder.mEncrypt.encode(mAddress + new CompressOptions()));
                 }
                 bitmap = compress(bitmap);
                 cache(bitmap, url);
+            }
+
                 runOnUIThread(callback, bitmap, null);
             }
 
@@ -159,7 +174,7 @@ public class ImageLoader {
         }
         return bitmap;
     }
-    private void cache(Bitmap bitmap, String url){
+    private void cache(Bitmap bitmap,final String url){
         if(!builder.noMemoryCache){
             MemoryCache.getInstance().put(url, bitmap);
         }
@@ -193,8 +208,10 @@ public class ImageLoader {
         MY_HANDLER.post(new Runnable() {
             @Override
             public void run() {
+                Log.d("ababab","e...");
                 if(e==null){
                     callback.success(bitmap);
+
                 }
                 else {
                     callback.fail(e);
@@ -215,12 +232,12 @@ public class ImageLoader {
         private CompressOptions mCompressOptions;
         private Drawable mPlaceHolder;
         private Drawable mErrorHolder;
-        private Boolean noMemoryCache;
-        private Boolean withOriginal;
+        private Boolean noMemoryCache = false ;
+        private Boolean withOriginal = false;
         private ImageLoaderBuilder(Context context){
             this.mContext = context;
         }
-        public ImageLoaderBuilder noMEmoryCache(boolean noMemoryCache){
+        public ImageLoaderBuilder noMemoryCache(boolean noMemoryCache){
             this.noMemoryCache = noMemoryCache;
             return this;
         }

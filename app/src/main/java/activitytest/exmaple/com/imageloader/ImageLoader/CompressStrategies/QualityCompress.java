@@ -15,7 +15,7 @@ import activitytest.exmaple.com.imageloader.ImageLoader.Option.CompressOptions;
  */
 public class QualityCompress implements CompressStrategy {
     private static final QualityCompress instance = new QualityCompress();
-    public QualityCompress getInstance(){return instance;}
+    public static QualityCompress getInstance(){return instance;}
     private QualityCompress(){}
     @Override
     public Bitmap compress(Bitmap bitmap, CompressOptions options) {
